@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <meta name="theme-color" content="#0f172a">
-<title>Smiley's Hub v17 — Advanced Payroll & HR</title>
+<title>Smiley's Hub v18 — Advanced Payroll & HR</title>
 <style>
 :root{--brand:#f59e0b;--brand-dark:#d97706;--dark-bg:#0f172a;--card-bg:#1e293b;--border:#334155;--finance:#22c55e;--expense:#ef4444;--payroll:#ec4899;--hr:#f43f5e;--ird:#0ea5e9;--text:#e2e8f0;}
 *{-webkit-tap-highlight-color:transparent;box-sizing:border-box;font-family:'Inter',system-ui,sans-serif;}
@@ -111,7 +111,7 @@ tr.clickable:hover{background:rgba(255,255,255,0.05);cursor:pointer;}
     <div class="app-logo">ST</div>
     <div class="app-header-text">
       <h1>Smiley's Enterprise Hub</h1>
-      <p>v17 · Advanced HR & Payroll</p>
+      <p>v18 · Advanced HR, PINs & Creditors</p>
     </div>
   </div>
 </header>
@@ -119,7 +119,7 @@ tr.clickable:hover{background:rgba(255,255,255,0.05);cursor:pointer;}
 <nav class="tab-nav">
   <button class="tab-btn active" data-tab="payroll" onclick="switchTab('payroll')">💵 AI Payroll</button>
   <button class="tab-btn" data-tab="clock" onclick="switchTab('clock')">⏱️ Time Clock</button>
-  <button class="tab-btn" data-tab="hr" onclick="switchTab('hr')">👥 HR & Staff</button>
+  <button class="tab-btn" data-tab="hr" onclick="switchTab('hr')">👥 HR & Creditors</button>
   <button class="tab-btn" data-tab="finance" onclick="switchTab('finance')">💰 Finance Ledger</button>
 </nav>
 
@@ -157,7 +157,7 @@ tr.clickable:hover{background:rgba(255,255,255,0.05);cursor:pointer;}
             </div>
           </div>
           <p style="font-size:14px;color:#cbd5e1;line-height:1.6;margin-bottom:16px;" id="aiMessage">
-            I have calculated hours, applied St. Lucia NIC/PAYE brackets, and processed custom deductions. You are ready to approve.
+            I have calculated hours, applied St. Lucia NIC/PAYE brackets, and processed creditor deductions. You are ready to approve.
           </p>
           <div id="aiActionArea">
             <button class="btn btn-payroll" style="width:100%;" onclick="approvePayroll()">✅ Approve & Sync to Finance</button>
@@ -171,7 +171,7 @@ tr.clickable:hover{background:rgba(255,255,255,0.05);cursor:pointer;}
         
         <div class="table-responsive">
           <table>
-            <thead><tr><th>Employee</th><th>Gross</th><th>NIC</th><th>PAYE</th><th>Deductions</th><th>Net Pay</th></tr></thead>
+            <thead><tr><th>Employee</th><th>Gross</th><th>NIC</th><th>PAYE</th><th>Creditors</th><th>Net Pay</th></tr></thead>
             <tbody id="payrollTableBody"></tbody>
           </table>
         </div>
@@ -197,38 +197,34 @@ tr.clickable:hover{background:rgba(255,255,255,0.05);cursor:pointer;}
         </div>
         <div class="card" style="padding:0;overflow:hidden;">
           <table>
-            <thead><tr><th>Name</th><th>Role</th><th>Pay Type</th><th>Rate</th><th>Action</th></tr></thead>
+            <thead><tr><th>Name</th><th>Role</th><th>Rate</th><th>PIN</th><th>Action</th></tr></thead>
             <tbody id="hrStaffList"></tbody>
           </table>
         </div>
       </div>
 
       <div>
+        <!-- CREDITOR DASHBOARD -->
+        <div class="card" style="border-color:var(--brand);">
+          <h3 style="margin:0 0 16px;font-size:16px;color:var(--brand);">Creditor Obligations</h3>
+          <p style="font-size:12px;color:#94a3b8;margin:0 0 16px;">Track total amounts owed to Courts, Credit Unions, etc., and make lump sum payments.</p>
+          <div id="creditorDashboard"></div>
+        </div>
+
+        <!-- FINAL PAY -->
         <div class="card" style="border-color:var(--expense);">
           <h3 style="margin:0 0 16px;font-size:16px;color:var(--expense);">Final Pay / Separation</h3>
-          <p style="font-size:12px;color:#94a3b8;margin:0 0 16px;">Calculate pro-rated final pay for an employee who leaves mid-period.</p>
-          
           <div class="form-group">
             <label>Select Employee</label>
-            <select id="termEmployee" class="form-control">
-              <!-- Populated by JS -->
-            </select>
+            <select id="termEmployee" class="form-control"></select>
           </div>
           <div class="form-row">
             <div class="form-group">
-              <label>Days Worked This Period</label>
+              <label>Days Worked</label>
               <input type="number" id="termDays" class="form-control" value="5" min="1" max="31">
             </div>
-            <div class="form-group">
-              <label>Reason</label>
-              <select class="form-control">
-                <option>Resignation</option>
-                <option>Dismissal</option>
-                <option>End of Contract</option>
-              </select>
-            </div>
           </div>
-          <button class="btn btn-outline" style="width:100%;border-color:var(--expense);color:var(--expense);" onclick="calculateFinalPay()">Calculate & Process Final Pay</button>
+          <button class="btn btn-outline" style="width:100%;border-color:var(--expense);color:var(--expense);" onclick="calculateFinalPay()">Calculate Final Pay</button>
         </div>
       </div>
     </div>
@@ -270,16 +266,29 @@ tr.clickable:hover{background:rgba(255,255,255,0.05);cursor:pointer;}
 // ==========================================
 // 1. DATA MODELS & STATE
 // ==========================================
+const CREDITOR_LIST = ['Courts', 'St. Lucia Credit Union', 'Staff Loan', 'Other'];
+
 let employees = [
-  { id: 1, name: 'Smiley', role: 'Owner', dept: 'Management', type: 'Salary', rate: 4500, hours: 40, pin: '1111', deductions: [] },
-  { id: 2, name: 'Marcus J.', role: 'Tint Tech', dept: 'Shop Floor', type: 'Hourly', rate: 25, hours: 38, pin: '2222', deductions: [{name: 'Staff Loan', amount: 50}] },
-  { id: 3, name: 'Andrea P.', role: 'Detailer', dept: 'Shop Floor', type: 'Hourly', rate: 22, hours: 40, pin: '3333', deductions: [] },
-  { id: 4, name: 'Kurt A.', role: 'Office Manager', dept: 'Office', type: 'Salary', rate: 3000, hours: 40, pin: '4444', deductions: [{name: 'Creditor (HiFi)', amount: 75}] }
+  { 
+    id: 1, name: 'Smiley', role: 'Owner', dept: 'Management', type: 'Salary', rate: 4500, hours: 40, pin: '1111', 
+    deductions: [] 
+  },
+  { 
+    id: 2, name: 'Marcus J.', role: 'Tint Tech', dept: 'Shop Floor', type: 'Hourly', rate: 25, hours: 38, pin: '2222', 
+    deductions: [{ creditor: 'Courts', totalOwed: 800, monthlyDeduction: 100, balance: 500 }] 
+  },
+  { 
+    id: 3, name: 'Andrea P.', role: 'Detailer', dept: 'Shop Floor', type: 'Hourly', rate: 22, hours: 40, pin: '3333', 
+    deductions: [] 
+  },
+  { 
+    id: 4, name: 'Kurt A.', role: 'Office Manager', dept: 'Office', type: 'Salary', rate: 3000, hours: 40, pin: '4444', 
+    deductions: [{ creditor: 'St. Lucia Credit Union', totalOwed: 2000, monthlyDeduction: 200, balance: 1200 }] 
+  }
 ];
 
 let financeLedger = [
-  { date: '2026-10-15', type: 'Income', category: 'Tint Revenue', entity: 'Marcus J.', amount: 850 },
-  { date: '2026-10-14', type: 'Expense', category: 'Materials', entity: 'LLumar', amount: -2200 }
+  { date: '2026-10-15', type: 'Income', category: 'Tint Revenue', entity: 'Marcus J.', amount: 850 }
 ];
 
 let currentPayrollDraft = [];
@@ -287,7 +296,7 @@ let isClockedIn = false;
 let editingEmployeeId = null;
 
 // ==========================================
-// 2. TAX ENGINE (St. Lucia Compliance)
+// 2. TAX ENGINE (St. Lucia)
 // ==========================================
 function calculateStLuciaTax(grossMonthly) {
   const nic = Math.min(grossMonthly * 0.05, 250);
@@ -313,8 +322,20 @@ function generatePayroll() {
     let gross = emp.type === 'Salary' ? emp.rate : emp.rate * emp.hours;
     const taxes = calculateStLuciaTax(gross);
     
-    // Calculate custom deductions
-    let customDeductionTotal = emp.deductions.reduce((sum, d) => sum + d.amount, 0);
+    // Calculate custom deductions (Creditors)
+    let customDeductionTotal = 0;
+    emp.deductions.forEach(d => {
+      // Only deduct if there is a remaining balance
+      if (d.balance > 0) {
+        // Deduct monthly amount, but don't exceed the balance
+        let deduction = Math.min(d.monthlyDeduction, d.balance);
+        customDeductionTotal += deduction;
+        d.currentDeduction = deduction; // Track what's being paid this period
+      } else {
+        d.currentDeduction = 0;
+      }
+    });
+
     let finalNet = taxes.net - customDeductionTotal;
 
     totalGross += gross;
@@ -325,11 +346,11 @@ function generatePayroll() {
     // Row HTML
     tableHtml += `
       <tr class="clickable" onclick="openPayslip(${emp.id})">
-        <td><strong>${emp.name}</strong><br><span style="font-size:10px;color:#94a3b8">${emp.role}</span></td>
+        <td><strong>${emp.name}</strong></td>
         <td>$${gross.toFixed(2)}</td>
         <td style="color:var(--ird)">$${taxes.nic.toFixed(2)}</td>
         <td style="color:var(--expense)">$${taxes.paye.toFixed(2)}</td>
-        <td style="color:#f59e0b">-$${customDeductionTotal.toFixed(2)}</td>
+        <td style="color:var(--brand)">-$${customDeductionTotal.toFixed(2)}</td>
         <td style="color:var(--finance);font-weight:800;">$${finalNet.toFixed(2)}</td>
       </tr>
     `;
@@ -346,108 +367,17 @@ function generatePayroll() {
 }
 
 // ==========================================
-// 4. DRILL-DOWNS & MODALS
-// ==========================================
-function openBreakdown(type) {
-  const modal = document.getElementById('modal');
-  const body = document.getElementById('modalBody');
-  
-  let title = '', html = '', total = 0;
-
-  if (type === 'gross') {
-    title = 'Total Gross Pay Breakdown';
-    currentPayrollDraft.forEach(e => {
-      html += `<tr><td>${e.name}</td><td style="text-align:right;">$${e.gross.toFixed(2)}</td></tr>`;
-      total += e.gross;
-    });
-  } else if (type === 'net') {
-    title = 'Total Net Pay Breakdown';
-    currentPayrollDraft.forEach(e => {
-      html += `<tr><td>${e.name}</td><td style="text-align:right;">$${e.finalNet.toFixed(2)}</td></tr>`;
-      total += e.finalNet;
-    });
-  } else if (type === 'nic') {
-    title = 'Employee NIC Breakdown (5% capped at $250)';
-    currentPayrollDraft.forEach(e => {
-      html += `<tr><td>${e.name}</td><td style="text-align:right;">$${e.nic.toFixed(2)}</td></tr>`;
-      total += e.nic;
-    });
-  } else if (type === 'paye') {
-    title = 'PAYE Tax Breakdown (15%/20%/30%)';
-    currentPayrollDraft.forEach(e => {
-      html += `<tr><td>${e.name}</td><td style="text-align:right;">$${e.paye.toFixed(2)}</td></tr>`;
-      total += e.paye;
-    });
-  }
-
-  body.innerHTML = `
-    <div style="display:flex;justify-content:space-between;margin-bottom:20px;">
-      <h3 style="margin:0;color:#fff;">${title}</h3>
-      <button class="btn btn-outline btn-sm" onclick="closeModal()">Close</button>
-    </div>
-    <table>
-      <thead><tr><th>Employee</th><th style="text-align:right;">Amount</th></tr></thead>
-      <tbody>
-        ${html}
-        <tr style="background:rgba(255,255,255,0.05);font-weight:bold;">
-          <td>TOTAL</td><td style="text-align:right;">$${total.toFixed(2)}</td>
-        </tr>
-      </tbody>
-    </table>
-  `;
-  modal.classList.add('active');
-}
-
-function openPayslip(id) {
-  const emp = currentPayrollDraft.find(e => e.id === id);
-  const modal = document.getElementById('modal');
-  const body = document.getElementById('modalBody');
-
-  let deductionRows = emp.deductions.map(d => `<tr><td>${d.name}</td><td style="text-align:right;">$${d.amount.toFixed(2)}</td></tr>`).join('');
-
-  body.innerHTML = `
-    <div class="no-print" style="display:flex;justify-content:space-between;margin-bottom:20px;">
-      <h3 style="margin:0;color:#fff;">Payslip Preview</h3>
-      <div style="display:flex;gap:8px;">
-        <button class="btn btn-finance btn-sm" onclick="window.print()">🖨️ Print</button>
-        <button class="btn btn-outline btn-sm" onclick="closeModal()">Close</button>
-      </div>
-    </div>
-    <div class="print-doc">
-      <h2>SMILEY'S TINTING PLUS</h2>
-      <p class="sub">Gros Islet, St. Lucia · TIN: 123456789</p>
-      <table style="border:none; margin-bottom:20px;">
-        <tr style="border:none;"><td style="border:none;padding:0;"><strong>Employee:</strong> ${emp.name}</td><td style="border:none;padding:0;text-align:right;"><strong>Pay Date:</strong> Oct 25, 2026</td></tr>
-        <tr style="border:none;"><td style="border:none;padding:0;"><strong>Role:</strong> ${emp.role}</td><td style="border:none;padding:0;text-align:right;"><strong>Period:</strong> Current</td></tr>
-      </table>
-      <table>
-        <tr><th>Earnings</th><th style="text-align:right;">Amount</th><th>Deductions</th><th style="text-align:right;">Amount</th></tr>
-        <tr><td>Basic Pay</td><td style="text-align:right;">$${emp.gross.toFixed(2)}</td><td>NIC (5%)</td><td style="text-align:right;">$${emp.nic.toFixed(2)}</td></tr>
-        <tr><td></td><td></td><td>PAYE Tax</td><td style="text-align:right;">$${emp.paye.toFixed(2)}</td></tr>
-        ${deductionRows}
-        <tr class="total-row"><td>Gross</td><td style="text-align:right;">$${emp.gross.toFixed(2)}</td><td>Total Deductions</td><td style="text-align:right;">$${(emp.nic + emp.paye + emp.customDeductionTotal).toFixed(2)}</td></tr>
-      </table>
-      <div style="text-align:right;font-size:16px;margin-top:20px;border-top:2px solid #000;padding-top:10px;">
-        <strong>NET PAY: $${emp.finalNet.toFixed(2)}</strong>
-      </div>
-    </div>
-  `;
-  modal.classList.add('active');
-}
-
-// ==========================================
-// 5. HR CRUD & FINAL PAY
+// 4. HR & CREDITOR DASHBOARD
 // ==========================================
 function renderHR() {
   let html = employees.map(e => `
     <tr>
       <td><strong>${e.name}</strong></td>
       <td>${e.role}</td>
-      <td><span class="badge badge-pink">${e.type}</span></td>
-      <td>$${e.rate}</td>
+      <td>$${e.rate} / ${e.type}</td>
+      <td><span class="badge badge-pink">${e.pin}</span></td>
       <td>
         <button class="btn btn-outline btn-sm" onclick="openEmployeeForm(${e.id})">Edit</button>
-        <button class="btn btn-outline btn-sm" style="color:var(--expense);border-color:var(--expense);" onclick="deleteEmployee(${e.id})">Del</button>
       </td>
     </tr>
   `).join('');
@@ -455,21 +385,76 @@ function renderHR() {
 
   // Populate final pay dropdown
   let select = document.getElementById('termEmployee');
-  select.innerHTML = employees.map(e => `<option value="${e.id}">${e.name} (${e.type} - $${e.rate})</option>`).join('');
+  select.innerHTML = employees.map(e => `<option value="${e.id}">${e.name}</option>`).join('');
+
+  renderCreditors();
 }
 
+function renderCreditors() {
+  // Aggregate debt by creditor
+  let creditorTotals = {};
+  
+  employees.forEach(emp => {
+    emp.deductions.forEach(d => {
+      if (d.balance > 0) {
+        if (!creditorTotals[d.creditor]) creditorTotals[d.creditor] = { total: 0, employees: [] };
+        creditorTotals[d.creditor].total += d.balance;
+        creditorTotals[d.creditor].employees.push({ name: emp.name, balance: d.balance });
+      }
+    });
+  });
+
+  let html = '';
+  for (const [creditor, data] of Object.entries(creditorTotals)) {
+    html += `
+      <div style="background:rgba(0,0,0,0.2);border:1px solid var(--border);border-radius:8px;padding:12px;margin-bottom:12px;">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
+          <strong style="color:#fff;">${creditor}</strong>
+          <span style="color:var(--brand);font-weight:800;">$${data.total.toFixed(2)} Owed</span>
+        </div>
+        <div style="font-size:11px;color:#94a3b8;">
+          ${data.employees.map(e => `${e.name} ($${e.balance.toFixed(2)})`).join(', ')}
+        </div>
+      </div>
+    `;
+  }
+
+  if (html === '') {
+    html = '<p style="font-size:12px;color:#94a3b8;">No outstanding creditor balances.</p>';
+  }
+
+  document.getElementById('creditorDashboard').innerHTML = html;
+}
+
+// ==========================================
+// 5. EMPLOYEE FORM (Add/Edit)
+// ==========================================
 function openEmployeeForm(id = null) {
   editingEmployeeId = id;
   const modal = document.getElementById('modal');
   const body = document.getElementById('modalBody');
-  const emp = id ? employees.find(e => e.id === id) : { name: '', role: '', dept: 'Shop Floor', type: 'Hourly', rate: '', deductions: [] };
+  const emp = id ? employees.find(e => e.id === id) : { name: '', role: '', dept: 'Shop Floor', type: 'Hourly', rate: '', pin: '0000', deductions: [] };
 
   let deductionFields = emp.deductions.map((d, i) => `
-    <div class="form-row" style="margin-bottom:8px;" id="ded-row-${i}">
-      <input type="text" class="form-control ded-name" value="${d.name}" placeholder="Deduction Name">
-      <div style="display:flex;gap:8px;">
-        <input type="number" class="form-control ded-amount" value="${d.amount}" placeholder="Amount">
-        <button class="btn btn-outline" style="color:var(--expense);" onclick="document.getElementById('ded-row-${i}').remove()">✕</button>
+    <div class="form-row" style="margin-bottom:8px;background:rgba(0,0,0,0.2);padding:10px;border-radius:8px;" id="ded-row-${i}">
+      <div style="grid-column:span 2; display:flex; justify-content:space-between;">
+        <select class="form-control ded-name" style="width:60%;">
+          ${CREDITOR_LIST.map(c => `<option value="${c}" ${d.creditor===c?'selected':''}>${c}</option>`).join('')}
+        </select>
+        <button class="btn btn-outline" style="color:var(--expense);padding:8px;" onclick="document.getElementById('ded-row-${i}').remove()">✕ Remove</button>
+      </div>
+      <div>
+        <label style="font-size:9px;">Total Owed</label>
+        <input type="number" class="form-control ded-total" value="${d.totalOwed}" placeholder="Total">
+      </div>
+      <div>
+        <label style="font-size:9px;">Monthly Deduction</label>
+        <input type="number" class="form-control ded-amount" value="${d.monthlyDeduction}" placeholder="Monthly">
+      </div>
+      <div style="grid-column:span 2;display:flex;align-items:center;gap:10px;">
+        <label style="font-size:11px;color:#94a3b8;">Current Balance:</label>
+        <input type="number" class="form-control ded-balance" value="${d.balance}" style="width:100px;">
+        <button class="btn btn-finance btn-sm" onclick="this.parentElement.querySelector('.ded-balance').value = 0;">Pay Full Balance</button>
       </div>
     </div>
   `).join('');
@@ -506,12 +491,15 @@ function openEmployeeForm(id = null) {
       </div>
     </div>
 
-    <div class="form-group"><label>Base Rate ($)</label><input type="number" id="f_rate" class="form-control" value="${emp.rate}"></div>
+    <div class="form-row">
+      <div class="form-group"><label>Base Rate ($)</label><input type="number" id="f_rate" class="form-control" value="${emp.rate}"></div>
+      <div class="form-group"><label>Clock-in PIN (4 digits)</label><input type="text" id="f_pin" class="form-control" value="${emp.pin}" maxlength="4"></div>
+    </div>
 
     <div style="margin-top:24px;border-top:1px solid var(--border);padding-top:16px;">
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
-        <label style="margin:0;">Custom Deductions (Loans, Creditors)</label>
-        <button class="btn btn-outline btn-sm" onclick="addDeductionField()">+ Add</button>
+        <label style="margin:0;font-size:14px;">Creditor Deductions</label>
+        <button class="btn btn-outline btn-sm" onclick="addDeductionField()">+ Add Creditor</button>
       </div>
       <div id="deductionContainer">
         ${deductionFields}
@@ -527,12 +515,26 @@ function addDeductionField() {
   const container = document.getElementById('deductionContainer');
   const div = document.createElement('div');
   div.className = 'form-row';
-  div.style.marginBottom = '8px';
+  div.style = 'margin-bottom:8px;background:rgba(0,0,0,0.2);padding:10px;border-radius:8px;';
   div.innerHTML = `
-    <input type="text" class="form-control ded-name" placeholder="Deduction Name">
-    <div style="display:flex;gap:8px;">
-      <input type="number" class="form-control ded-amount" placeholder="Amount">
-      <button class="btn btn-outline" style="color:var(--expense);" onclick="this.parentElement.parentElement.remove()">✕</button>
+    <div style="grid-column:span 2; display:flex; justify-content:space-between;">
+      <select class="form-control ded-name" style="width:60%;">
+        ${CREDITOR_LIST.map(c => `<option value="${c}">${c}</option>`).join('')}
+      </select>
+      <button class="btn btn-outline" style="color:var(--expense);padding:8px;" onclick="this.parentElement.parentElement.remove()">✕ Remove</button>
+    </div>
+    <div>
+      <label style="font-size:9px;">Total Owed</label>
+      <input type="number" class="form-control ded-total" placeholder="Total">
+    </div>
+    <div>
+      <label style="font-size:9px;">Monthly Deduction</label>
+      <input type="number" class="form-control ded-amount" placeholder="Monthly">
+    </div>
+    <div style="grid-column:span 2;display:flex;align-items:center;gap:10px;">
+      <label style="font-size:11px;color:#94a3b8;">Current Balance:</label>
+      <input type="number" class="form-control ded-balance" style="width:100px;" placeholder="Balance">
+      <button class="btn btn-finance btn-sm" onclick="this.parentElement.querySelector('.ded-balance').value = 0;">Pay Full Balance</button>
     </div>
   `;
   container.appendChild(div);
@@ -544,20 +546,23 @@ function saveEmployee() {
   const dept = document.getElementById('f_dept').value;
   const type = document.getElementById('f_type').value;
   const rate = parseFloat(document.getElementById('f_rate').value);
+  const pin = document.getElementById('f_pin').value || '0000';
 
   // Gather deductions
   let deductions = [];
-  document.querySelectorAll('#deductionContainer .form-row').forEach(row => {
+  document.querySelectorAll('#deductionContainer > div').forEach(row => {
     const dName = row.querySelector('.ded-name').value;
-    const dAmount = parseFloat(row.querySelector('.ded-amount').value);
-    if (dName && dAmount) deductions.push({ name: dName, amount: dAmount });
+    const dTotal = parseFloat(row.querySelector('.ded-total').value) || 0;
+    const dAmount = parseFloat(row.querySelector('.ded-amount').value) || 0;
+    const dBalance = parseFloat(row.querySelector('.ded-balance').value) || 0;
+    if (dName && dAmount > 0) deductions.push({ creditor: dName, totalOwed: dTotal, monthlyDeduction: dAmount, balance: dBalance });
   });
 
   if (editingEmployeeId) {
     const idx = employees.findIndex(e => e.id === editingEmployeeId);
-    employees[idx] = { ...employees[idx], name, role, dept, type, rate, deductions };
+    employees[idx] = { ...employees[idx], name, role, dept, type, rate, pin, deductions };
   } else {
-    employees.push({ id: Date.now(), name, role, dept, type, rate, hours: 40, pin: '0000', deductions });
+    employees.push({ id: Date.now(), name, role, dept, type, rate, hours: 40, pin, deductions });
   }
 
   closeModal();
@@ -565,53 +570,102 @@ function saveEmployee() {
   renderHR();
 }
 
-function deleteEmployee(id) {
-  if(confirm('Are you sure you want to delete this employee?')) {
-    employees = employees.filter(e => e.id !== id);
-    generatePayroll();
-    renderHR();
-  }
+// ==========================================
+// 6. MODALS (Breakdowns, Payslips, IRD)
+// ==========================================
+function openBreakdown(type) {
+  const modal = document.getElementById('modal');
+  const body = document.getElementById('modalBody');
+  let title = '', html = '', total = 0;
+
+  if (type === 'gross') { title = 'Total Gross Pay Breakdown'; currentPayrollDraft.forEach(e => { html += `<tr><td>${e.name}</td><td style="text-align:right;">$${e.gross.toFixed(2)}</td></tr>`; total += e.gross; }); }
+  else if (type === 'net') { title = 'Total Net Pay Breakdown'; currentPayrollDraft.forEach(e => { html += `<tr><td>${e.name}</td><td style="text-align:right;">$${e.finalNet.toFixed(2)}</td></tr>`; total += e.finalNet; }); }
+  else if (type === 'nic') { title = 'Employee NIC Breakdown (5%)'; currentPayrollDraft.forEach(e => { html += `<tr><td>${e.name}</td><td style="text-align:right;">$${e.nic.toFixed(2)}</td></tr>`; total += e.nic; }); }
+  else if (type === 'paye') { title = 'PAYE Tax Breakdown'; currentPayrollDraft.forEach(e => { html += `<tr><td>${e.name}</td><td style="text-align:right;">$${e.paye.toFixed(2)}</td></tr>`; total += e.paye; }); }
+
+  body.innerHTML = `
+    <div style="display:flex;justify-content:space-between;margin-bottom:20px;">
+      <h3 style="margin:0;color:#fff;">${title}</h3>
+      <button class="btn btn-outline btn-sm" onclick="closeModal()">Close</button>
+    </div>
+    <table><thead><tr><th>Employee</th><th style="text-align:right;">Amount</th></tr></thead><tbody>${html}<tr style="background:rgba(255,255,255,0.05);font-weight:bold;"><td>TOTAL</td><td style="text-align:right;">$${total.toFixed(2)}</td></tr></tbody></table>
+  `;
+  modal.classList.add('active');
 }
 
+function openPayslip(id) {
+  const emp = currentPayrollDraft.find(e => e.id === id);
+  const modal = document.getElementById('modal');
+  const body = document.getElementById('modalBody');
+
+  let deductionRows = emp.deductions.map(d => {
+    if (d.currentDeduction > 0) {
+      return `<tr><td>${d.creditor} (Bal: $${(d.balance - d.currentDeduction).toFixed(2)})</td><td style="text-align:right;">$${d.currentDeduction.toFixed(2)}</td></tr>`;
+    }
+    return '';
+  }).join('');
+
+  body.innerHTML = `
+    <div class="no-print" style="display:flex;justify-content:space-between;margin-bottom:20px;">
+      <h3 style="margin:0;color:#fff;">Payslip Preview</h3>
+      <div style="display:flex;gap:8px;">
+        <button class="btn btn-finance btn-sm" onclick="window.print()">🖨️ Print</button>
+        <button class="btn btn-outline btn-sm" onclick="closeModal()">Close</button>
+      </div>
+    </div>
+    <div class="print-doc">
+      <h2>SMILEY'S TINTING PLUS</h2>
+      <p class="sub">Gros Islet, St. Lucia</p>
+      <table style="border:none; margin-bottom:20px;">
+        <tr style="border:none;"><td style="border:none;padding:0;"><strong>Employee:</strong> ${emp.name}</td><td style="border:none;padding:0;text-align:right;"><strong>Pay Date:</strong> Current</td></tr>
+      </table>
+      <table>
+        <tr><th>Earnings</th><th style="text-align:right;">Amount</th><th>Deductions</th><th style="text-align:right;">Amount</th></tr>
+        <tr><td>Basic Pay</td><td style="text-align:right;">$${emp.gross.toFixed(2)}</td><td>NIC (5%)</td><td style="text-align:right;">$${emp.nic.toFixed(2)}</td></tr>
+        <tr><td></td><td></td><td>PAYE Tax</td><td style="text-align:right;">$${emp.paye.toFixed(2)}</td></tr>
+        ${deductionRows}
+        <tr class="total-row"><td>Gross</td><td style="text-align:right;">$${emp.gross.toFixed(2)}</td><td>Total Deductions</td><td style="text-align:right;">$${(emp.nic + emp.paye + emp.customDeductionTotal).toFixed(2)}</td></tr>
+      </table>
+      <div style="text-align:right;font-size:16px;margin-top:20px;border-top:2px solid #000;padding-top:10px;">
+        <strong>NET PAY: $${emp.finalNet.toFixed(2)}</strong>
+      </div>
+    </div>
+  `;
+  modal.classList.add('active');
+}
+
+// ==========================================
+// 7. FINAL PAY & UTILS
+// ==========================================
 function calculateFinalPay() {
   const empId = parseInt(document.getElementById('termEmployee').value);
   const days = parseInt(document.getElementById('termDays').value);
   const emp = employees.find(e => e.id === empId);
   if (!emp) return;
 
-  // Final pay calculation (Assuming 22 working days in a month for salaried, or just daily rate)
-  let dailyRate = 0;
-  if (emp.type === 'Salary' || emp.type === 'Monthly') dailyRate = emp.rate / 22;
-  else if (emp.type === 'Weekly') dailyRate = emp.rate / 5;
-  else if (emp.type === 'Daily') dailyRate = emp.rate;
-  else if (emp.type === 'Hourly') dailyRate = emp.rate * 8; // assuming 8 hr day
-
+  let dailyRate = emp.type === 'Salary' || emp.type === 'Monthly' ? emp.rate / 22 : (emp.type === 'Weekly' ? emp.rate / 5 : (emp.type === 'Hourly' ? emp.rate * 8 : emp.rate));
   const grossFinal = dailyRate * days;
   const taxes = calculateStLuciaTax(grossFinal);
-  const finalNet = taxes.net;
 
   const modal = document.getElementById('modal');
   const body = document.getElementById('modalBody');
 
   body.innerHTML = `
     <div class="no-print" style="display:flex;justify-content:space-between;margin-bottom:20px;">
-      <h3 style="margin:0;color:#fff;">Final Pay Settlement: ${emp.name}</h3>
+      <h3 style="margin:0;color:#fff;">Final Pay: ${emp.name}</h3>
       <button class="btn btn-outline btn-sm" onclick="closeModal()">Close</button>
     </div>
     <div class="print-doc">
       <h2>SMILEY'S TINTING PLUS</h2>
       <p class="sub">FINAL PAY SETTLEMENT</p>
-      <table style="border:none; margin-bottom:20px;">
-        <tr style="border:none;"><td style="border:none;padding:0;"><strong>Employee:</strong> ${emp.name}</td><td style="border:none;padding:0;text-align:right;"><strong>Days Worked:</strong> ${days}</td></tr>
-      </table>
       <table>
         <tr><th>Earnings</th><th style="text-align:right;">Amount</th><th>Deductions</th><th style="text-align:right;">Amount</th></tr>
-        <tr><td>Pro-Rated Basic Pay</td><td style="text-align:right;">$${grossFinal.toFixed(2)}</td><td>NIC (5%)</td><td style="text-align:right;">$${taxes.nic.toFixed(2)}</td></tr>
+        <tr><td>Pro-Rated Basic Pay (${days} days)</td><td style="text-align:right;">$${grossFinal.toFixed(2)}</td><td>NIC (5%)</td><td style="text-align:right;">$${taxes.nic.toFixed(2)}</td></tr>
         <tr><td></td><td></td><td>PAYE Tax</td><td style="text-align:right;">$${taxes.paye.toFixed(2)}</td></tr>
         <tr class="total-row"><td>Gross</td><td style="text-align:right;">$${grossFinal.toFixed(2)}</td><td>Total Deductions</td><td style="text-align:right;">$${(taxes.nic + taxes.paye).toFixed(2)}</td></tr>
       </table>
       <div style="text-align:right;font-size:16px;margin-top:20px;border-top:2px solid #000;padding-top:10px;">
-        <strong>FINAL NET PAY: $${finalNet.toFixed(2)}</strong>
+        <strong>FINAL NET PAY: $${taxes.net.toFixed(2)}</strong>
       </div>
     </div>
     <div class="no-print" style="display:flex;gap:12px;margin-top:20px;">
@@ -623,45 +677,40 @@ function calculateFinalPay() {
 }
 
 function processFinalPay(empId, amount) {
-  // Add to Finance Ledger
-  financeLedger.unshift({
-    date: new Date().toISOString().split('T')[0],
-    type: 'Expense',
-    category: 'Final Pay',
-    entity: `Settlement: ${employees.find(e=>e.id===empId).name}`,
-    amount: -amount
-  });
-
-  // Remove from active employees
+  financeLedger.unshift({ date: new Date().toISOString().split('T')[0], type: 'Expense', category: 'Final Pay', entity: `Settlement: ${employees.find(e=>e.id===empId).name}`, amount: -amount });
   employees = employees.filter(e => e.id !== empId);
-
-  closeModal();
-  generatePayroll();
-  renderHR();
-  renderFinance();
+  closeModal(); generatePayroll(); renderHR(); renderFinance();
   alert('Final Pay Processed & Employee Archived.');
 }
 
-// ==========================================
-// 6. UTILS & NAVIGATION
-// ==========================================
 function approvePayroll() {
   const btn = document.querySelector('.btn-payroll');
   btn.innerHTML = '⏳ Syncing to Ledger...';
   
   setTimeout(() => {
+    // 1. Calculate total cash out
     let totalCost = currentPayrollDraft.reduce((sum, emp) => sum + emp.gross + emp.nic, 0);
-    financeLedger.unshift({
-      date: new Date().toISOString().split('T')[0],
-      type: 'Expense',
-      category: 'Payroll',
-      entity: 'Staff Salaries (AI Payroll)',
-      amount: -totalCost
+    
+    // 2. Log to Finance
+    financeLedger.unshift({ date: new Date().toISOString().split('T')[0], type: 'Expense', category: 'Payroll', entity: 'Staff Salaries (AI Payroll)', amount: -totalCost });
+
+    // 3. Deduct creditor balances
+    currentPayrollDraft.forEach(draftEmp => {
+      let realEmp = employees.find(e => e.id === draftEmp.id);
+      realEmp.deductions.forEach(d => {
+        if (d.currentDeduction > 0) {
+          d.balance -= d.currentDeduction;
+          d.currentDeduction = 0; // Reset for next period
+        }
+      });
     });
 
-    document.getElementById('aiMessage').innerHTML = '<strong>Payroll Approved!</strong> A consolidated expense of <strong>$' + totalCost.toFixed(2) + '</strong> has been posted to the Finance Ledger.';
+    // 4. Update UI
+    document.getElementById('aiMessage').innerHTML = '<strong>Payroll Approved!</strong> Expense of <strong>$' + totalCost.toFixed(2) + '</strong> posted to Finance. Creditor balances updated.';
     document.getElementById('aiActionArea').innerHTML = '<button class="btn btn-finance" style="width:100%;" onclick="switchTab(\'finance\')">View in Finance Ledger →</button>';
     
+    generatePayroll();
+    renderHR();
     renderFinance();
   }, 1500);
 }
@@ -670,32 +719,23 @@ function generateIRDReport(type) {
   const modal = document.getElementById('modal');
   const body = document.getElementById('modalBody');
   let totalGross = 0, totalPaye = 0;
-
   let rows = currentPayrollDraft.map(e => {
-    totalGross += e.gross;
-    totalPaye += e.paye;
-    return `<tr><td>${e.name}</td><td>${e.dept}</td><td>$${e.gross.toFixed(2)}</td><td>$${e.paye.toFixed(2)}</td></tr>`;
+    totalGross += e.gross; totalPaye += e.paye;
+    return `<tr><td>${e.name}</td><td>$${e.gross.toFixed(2)}</td><td>$${e.paye.toFixed(2)}</td></tr>`;
   }).join('');
-
-  let header = type === 'P30' ? `<h2>INLAND REVENUE DEPARTMENT</h2><p class="sub">P30 - MONTHLY PAYE RETURN</p>` : `<h2>INLAND REVENUE DEPARTMENT</h2><p class="sub">TD6 - ANNUAL REMUNERATION RETURN</p>`;
 
   body.innerHTML = `
     <div class="no-print" style="display:flex;justify-content:space-between;margin-bottom:20px;">
-      <h3 style="margin:0;color:#fff;">${type} Form Preview</h3>
+      <h3 style="margin:0;color:#fff;">${type} Form</h3>
       <div style="display:flex;gap:8px;">
         <button class="btn btn-finance btn-sm" onclick="window.print()">🖨️ Print</button>
         <button class="btn btn-outline btn-sm" onclick="closeModal()">Close</button>
       </div>
     </div>
     <div class="print-doc">
-      ${header}
-      <p style="font-size:12px;margin-bottom:20px;"><strong>Employer:</strong> Smiley's Tinting Plus</p>
-      <table>
-        <tr><th>Employee</th><th>Dept</th><th>Gross Pay</th><th>PAYE Deducted</th></tr>
-        ${rows}
-        <tr class="total-row"><td colspan="2">TOTAL</td><td>$${totalGross.toFixed(2)}</td><td>$${totalPaye.toFixed(2)}</td></tr>
-      </table>
-      <p style="font-size:10px;margin-top:20px;">I certify that the above information is accurate and complete.</p>
+      <h2>INLAND REVENUE DEPARTMENT</h2>
+      <p class="sub">${type === 'P30' ? 'P30 - MONTHLY PAYE RETURN' : 'TD6 - ANNUAL REMUNERATION RETURN'}</p>
+      <table><tr><th>Employee</th><th>Gross Pay</th><th>PAYE Deducted</th></tr>${rows}<tr class="total-row"><td>TOTAL</td><td>$${totalGross.toFixed(2)}</td><td>$${totalPaye.toFixed(2)}</td></tr></table>
     </div>
   `;
   modal.classList.add('active');
@@ -704,17 +744,7 @@ function generateIRDReport(type) {
 function renderFinance() {
   let html = financeLedger.map(t => {
     const isIncome = t.amount > 0;
-    return `
-      <tr>
-        <td>${t.date}</td>
-        <td><span class="badge ${isIncome ? 'badge-green' : 'badge-red'}">${t.type}</span></td>
-        <td>${t.category}</td>
-        <td>${t.entity}</td>
-        <td style="text-align:right;font-weight:800;color:${isIncome ? 'var(--finance)' : 'var(--expense)'}">
-          ${isIncome ? '+' : ''}$${Math.abs(t.amount).toFixed(2)}
-        </td>
-      </tr>
-    `;
+    return `<tr><td>${t.date}</td><td><span class="badge ${isIncome ? 'badge-green' : 'badge-red'}">${t.type}</span></td><td>${t.category}</td><td>${t.entity}</td><td style="text-align:right;font-weight:800;color:${isIncome ? 'var(--finance)' : 'var(--expense)'}">${isIncome ? '+' : ''}$${Math.abs(t.amount).toFixed(2)}</td></tr>`;
   }).join('');
   document.getElementById('financeTableBody').innerHTML = html;
 }
@@ -735,12 +765,10 @@ function toggleClock() {
   isClockedIn = !isClockedIn;
   const btn = document.getElementById('clockBtn');
   if(isClockedIn) {
-    btn.textContent = 'Clock Out';
-    btn.classList.add('active');
+    btn.textContent = 'Clock Out'; btn.classList.add('active');
     document.getElementById('clockStatus').textContent = `${emp.name} clocked in.`;
   } else {
-    btn.textContent = 'Clock In';
-    btn.classList.remove('active');
+    btn.textContent = 'Clock In'; btn.classList.remove('active');
     document.getElementById('clockStatus').textContent = `${emp.name} shift ended.`;
     document.getElementById('clockPin').value = '';
   }
@@ -753,9 +781,7 @@ function switchTab(tab) {
   document.querySelector(`.tab-btn[data-tab="${tab}"]`).classList.add('active');
 }
 
-function closeModal() {
-  document.getElementById('modal').classList.remove('active');
-}
+function closeModal() { document.getElementById('modal').classList.remove('active'); }
 
 // Init
 generatePayroll();
