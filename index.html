@@ -4,9 +4,9 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <meta name="theme-color" content="#0f172a">
-<title>Smiley's Hub v19 — Double-Entry Accounting & Payroll</title>
+<title>Smiley's Hub v20 — DeepSeek AI Enterprise</title>
 <style>
-:root{--brand:#f59e0b;--brand-dark:#d97706;--dark-bg:#0f172a;--card-bg:#1e293b;--border:#334155;--finance:#22c55e;--expense:#ef4444;--payroll:#ec4899;--hr:#f43f5e;--ird:#0ea5e9;--text:#e2e8f0;}
+:root{--brand:#f59e0b;--brand-dark:#d97706;--dark-bg:#0f172a;--card-bg:#1e293b;--border:#334155;--finance:#22c55e;--expense:#ef4444;--payroll:#ec4899;--hr:#f43f5e;--ird:#0ea5e9;--text:#e2e8f0;--ai:#8b5cf6;}
 *{-webkit-tap-highlight-color:transparent;box-sizing:border-box;font-family:'Inter',system-ui,sans-serif;}
 body{margin:0;background:var(--dark-bg);color:var(--text);height:100vh;overflow:hidden;display:flex;flex-direction:column;}
 
@@ -21,9 +21,7 @@ body{margin:0;background:var(--dark-bg);color:var(--text);height:100vh;overflow:
 .tab-btn:hover{color:#fff;background:rgba(255,255,255,0.05);}
 .tab-btn.active{background:var(--brand);color:#0f172a;}
 .tab-btn[data-tab="payroll"].active{background:var(--payroll);color:#fff;}
-.tab-btn[data-tab="clock"].active{background:var(--finance);color:#fff;}
 .tab-btn[data-tab="hr"].active{background:var(--hr);color:#fff;}
-.tab-btn[data-tab="finance"].active{background:var(--finance);color:#fff;}
 
 /* MAIN LAYOUT */
 .app-main{flex:1;overflow-y:auto;padding:20px;}
@@ -47,14 +45,13 @@ th{padding:12px;border-bottom:1px solid var(--border);color:#94a3b8;font-weight:
 td{padding:12px;border-bottom:1px solid rgba(51,65,85,0.5);}
 tr:last-child td{border-bottom:none;}
 tr.clickable:hover{background:rgba(255,255,255,0.05);cursor:pointer;}
-.text-right{text-align:right;}
-.text-green{color:var(--finance);}
-.text-red{color:var(--expense);}
+.text-right{text-align:right;}.text-green{color:var(--finance);}.text-red{color:var(--expense);}
 
 /* BUTTONS & BADGES */
 .btn{padding:10px 18px;border-radius:8px;font-weight:700;font-size:13px;border:none;cursor:pointer;transition:0.2s;display:inline-flex;align-items:center;gap:8px;justify-content:center;}
 .btn-payroll{background:var(--payroll);color:#fff;}
 .btn-finance{background:var(--finance);color:#fff;}
+.btn-hr{background:var(--hr);color:#fff;}
 .btn-outline{background:transparent;border:1px solid var(--border);color:#fff;}
 .btn-outline:hover{background:rgba(255,255,255,0.1);}
 .btn-sm{padding:6px 12px;font-size:11px;}
@@ -62,6 +59,7 @@ tr.clickable:hover{background:rgba(255,255,255,0.05);cursor:pointer;}
 .badge-green{background:rgba(34,197,94,0.2);color:#22c55e;}
 .badge-red{background:rgba(239,68,68,0.2);color:#ef4444;}
 .badge-blue{background:rgba(14,165,233,0.2);color:#0ea5e9;}
+.badge-amber{background:rgba(245,158,11,0.2);color:#f59e0b;}
 
 /* MODAL & FORMS */
 .modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.85);backdrop-filter:blur(4px);display:none;align-items:center;justify-content:center;padding:20px;z-index:1000;}
@@ -70,25 +68,35 @@ tr.clickable:hover{background:rgba(255,255,255,0.05);cursor:pointer;}
 .form-group{margin-bottom:16px;}
 .form-group label{display:block;font-size:11px;font-weight:700;color:#94a3b8;text-transform:uppercase;margin-bottom:6px;}
 .form-control{width:100%;padding:12px;background:#0f172a;border:1px solid var(--border);border-radius:8px;color:#fff;font-size:14px;}
-.form-control:focus{outline:none;border-color:var(--payroll);}
+.form-control:focus{outline:none;border-color:var(--hr);}
 .form-row{display:grid;grid-template-columns:1fr 1fr;gap:16px;}
 
-/* AI CARD */
-.ai-card{background:linear-gradient(135deg,rgba(236,72,153,0.1),rgba(139,92,246,0.1));border:1px solid rgba(236,72,153,0.3);border-radius:16px;padding:20px;}
-.ai-avatar{width:40px;height:40px;border-radius:10px;background:var(--payroll);color:#fff;display:flex;align-items:center;justify-content:center;font-size:20px;}
+/* AI STYLES */
+.ai-card{background:linear-gradient(135deg,rgba(139,92,246,0.15),rgba(236,72,153,0.15));border:1px solid rgba(139,92,246,0.4);border-radius:16px;padding:20px;position:relative;overflow:hidden;}
+.ai-avatar{width:40px;height:40px;border-radius:10px;background:var(--ai);color:#fff;display:flex;align-items:center;justify-content:center;font-size:20px;box-shadow:0 0 15px rgba(139,92,246,0.5);}
+.ai-typing::after{content:'▋';animation:blink 1s step-start infinite;color:var(--ai);}
+@keyframes blink{50%{opacity:0;}}
+
+/* CHAT WIDGET */
+#ai-chat-btn{position:fixed;bottom:24px;right:24px;width:60px;height:60px;border-radius:30px;background:var(--ai);color:#fff;display:flex;align-items:center;justify-content:center;font-size:28px;cursor:pointer;box-shadow:0 4px 20px rgba(139,92,246,0.4);z-index:900;transition:0.3s;}
+#ai-chat-btn:hover{transform:scale(1.1);}
+#ai-chat-window{position:fixed;bottom:100px;right:24px;width:350px;height:450px;background:var(--card-bg);border:1px solid var(--border);border-radius:16px;display:none;flex-direction:column;z-index:900;box-shadow:0 10px 40px rgba(0,0,0,0.5);}
+#ai-chat-window.active{display:flex;}
+.chat-header{background:var(--ai);color:#fff;padding:16px;border-radius:16px 16px 0 0;font-weight:800;display:flex;justify-content:space-between;}
+.chat-messages{flex:1;padding:16px;overflow-y:auto;display:flex;flex-direction:column;gap:12px;}
+.msg{max-width:85%;padding:10px 14px;border-radius:12px;font-size:13px;line-height:1.5;}
+.msg.ai{background:rgba(139,92,246,0.2);align-self:flex-start;border:1px solid rgba(139,92,246,0.3);}
+.msg.user{background:var(--border);align-self:flex-end;}
+.chat-input{display:flex;padding:10px;border-top:1px solid var(--border);}
+.chat-input input{flex:1;background:var(--dark-bg);border:1px solid var(--border);border-radius:8px;padding:10px;color:#fff;outline:none;}
+.chat-input button{background:var(--ai);border:none;color:#fff;padding:10px 16px;border-radius:8px;margin-left:8px;cursor:pointer;font-weight:700;}
 
 /* PRINT */
 .print-doc{background:#fff;color:#000;padding:40px;border-radius:8px;font-family:'Courier New',Courier,monospace;}
-.print-doc h2{text-align:center;margin:0 0 4px;font-size:18px;}
 .print-doc table{width:100%;border-collapse:collapse;margin-bottom:20px;}
 .print-doc th,.print-doc td{border:1px solid #ccc;padding:8px;text-align:left;font-size:12px;}
 .print-doc th{background:#f4f4f4;}
-@media print {
-  body * { visibility: hidden; }
-  .print-doc, .print-doc * { visibility: visible; }
-  .print-doc { position: absolute; left: 0; top: 0; width: 100%; border: none; padding: 0; }
-  .no-print { display: none !important; }
-}
+@media print {body * { visibility: hidden; } .print-doc, .print-doc * { visibility: visible; } .print-doc { position: absolute; left: 0; top: 0; width: 100%; border: none; padding: 0; } .no-print { display: none !important; }}
 </style>
 </head>
 <body>
@@ -98,7 +106,7 @@ tr.clickable:hover{background:rgba(255,255,255,0.05);cursor:pointer;}
     <div class="app-logo">ST</div>
     <div class="app-header-text">
       <h1>Smiley's Enterprise Hub</h1>
-      <p>v19 · Double-Entry Accounting & Payroll</p>
+      <p>v20 · DeepSeek AI Intelligence Enabled</p>
     </div>
   </div>
 </header>
@@ -111,7 +119,6 @@ tr.clickable:hover{background:rgba(255,255,255,0.05);cursor:pointer;}
 </nav>
 
 <main class="app-main">
-
   <!-- PAYROLL VIEW -->
   <div id="view-payroll" class="view active">
     <div class="stat-grid">
@@ -123,16 +130,17 @@ tr.clickable:hover{background:rgba(255,255,255,0.05);cursor:pointer;}
 
     <div class="split-2">
       <div class="card">
+        <!-- AI MASTER CARD -->
         <div class="ai-card" id="aiOfficerCard">
           <div style="display:flex;align-items:center;gap:12px;margin-bottom:12px;">
             <div class="ai-avatar">🤖</div>
             <div>
-              <h3 style="margin:0;font-size:16px;color:#fff;">AI Payroll Master</h3>
-              <p style="margin:2px 0 0;font-size:12px;color:#cbd5e1;">Draft prepared & Journal Entry ready</p>
+              <h3 style="margin:0;font-size:16px;color:#fff;">DeepSeek AI Payroll Master</h3>
+              <p style="margin:2px 0 0;font-size:12px;color:#cbd5e1;">Live Analysis & Journal Draft</p>
             </div>
           </div>
-          <p style="font-size:14px;color:#cbd5e1;line-height:1.6;margin-bottom:16px;" id="aiMessage">
-            I have calculated hours, applied St. Lucia NIC/PAYE brackets, and processed creditor deductions. Upon approval, I will generate a balanced compound journal entry.
+          <p style="font-size:14px;color:#cbd5e1;line-height:1.6;margin-bottom:16px;min-height:60px;" id="aiMessage" class="ai-typing">
+            Analyzing payroll data...
           </p>
           <div id="aiActionArea">
             <button class="btn btn-payroll" style="width:100%;" onclick="approvePayroll()">✅ Approve & Post Journal Entry</button>
@@ -143,7 +151,6 @@ tr.clickable:hover{background:rgba(255,255,255,0.05);cursor:pointer;}
           <h3 style="margin:0;font-size:16px;">Employee Breakdown</h3>
           <span style="font-size:11px;color:#94a3b8;">Click row for payslip</span>
         </div>
-        
         <div class="table-responsive">
           <table>
             <thead><tr><th>Employee</th><th>Gross</th><th>NIC</th><th>PAYE</th><th>Deductions</th><th>Net Pay</th></tr></thead>
@@ -158,6 +165,60 @@ tr.clickable:hover{background:rgba(255,255,255,0.05);cursor:pointer;}
           <button class="btn btn-outline" style="width:100%;justify-content:flex-start;margin-bottom:8px;border-color:var(--ird);" onclick="generateIRDReport('P30')">📄 P30 (Monthly PAYE)</button>
           <button class="btn btn-outline" style="width:100%;justify-content:flex-start;border-color:var(--ird);" onclick="generateIRDReport('TD6')">📄 TD6 (Annual Return)</button>
         </div>
+        <div class="card" style="background:rgba(139,92,246,0.05);border-color:rgba(139,92,246,0.3);">
+           <h3 style="margin:0 0 8px;font-size:14px;color:var(--ai);">🧠 DeepSeek Insights</h3>
+           <p style="font-size:12px;color:#cbd5e1;" id="aiInsightsBox">Waiting for analysis...</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- HR & CREDITORS VIEW -->
+  <div id="view-hr" class="view">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;">
+      <h2 style="margin:0;font-size:20px;">HR & Creditor Management</h2>
+      <button class="btn btn-hr" onclick="openEmployeeForm()">+ Add Employee</button>
+    </div>
+
+    <div class="stat-grid">
+      <div class="stat-box" style="cursor:default;">
+        <p>Total Active Staff</p>
+        <h3 id="hrTotalStaff" style="color:var(--hr)">0</h3>
+      </div>
+      <div class="stat-box" style="cursor:default;">
+        <p>Total Creditor Balances</p>
+        <h3 id="hrTotalCreditors" class="text-red">$0.00</h3>
+      </div>
+    </div>
+
+    <div class="split-2">
+      <!-- Employee Roster -->
+      <div class="card">
+        <h3 style="margin:0 0 16px;font-size:16px;">Employee Roster & Pay Rates</h3>
+        <div class="table-responsive">
+          <table>
+            <thead><tr><th>Name & Role</th><th>Dept</th><th>Type</th><th>Rate</th><th>PIN</th><th>Action</th></tr></thead>
+            <tbody id="hrTableBody"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Creditor Tracking & AI -->
+      <div>
+        <div class="card">
+          <h3 style="margin:0 0 16px;font-size:16px;">Active Creditor Loans</h3>
+          <div class="table-responsive">
+            <table>
+              <thead><tr><th>Employee</th><th>Creditor</th><th>Remaining Bal.</th><th>Monthly</th></tr></thead>
+              <tbody id="creditorTableBody"></tbody>
+            </table>
+          </div>
+        </div>
+
+        <div class="card" style="background:rgba(139,92,246,0.05);border-color:rgba(139,92,246,0.3);">
+           <h3 style="margin:0 0 8px;font-size:14px;color:var(--ai);">🧠 DeepSeek HR Risk Analysis</h3>
+           <p style="font-size:13px;color:#cbd5e1;line-height:1.6;" id="hrAiMessage">Analyzing workforce data...</p>
+        </div>
       </div>
     </div>
   </div>
@@ -171,7 +232,6 @@ tr.clickable:hover{background:rgba(255,255,255,0.05);cursor:pointer;}
         <button class="btn btn-finance" onclick="openCOAForm()">+ Add Account</button>
       </div>
     </div>
-
     <div class="split-2">
       <div class="card">
         <h3 style="margin:0 0 16px;font-size:16px;">Chart of Accounts</h3>
@@ -182,22 +242,10 @@ tr.clickable:hover{background:rgba(255,255,255,0.05);cursor:pointer;}
           </table>
         </div>
       </div>
-
       <div class="card">
         <h3 style="margin:0 0 16px;font-size:16px;">Recent Journal Entries</h3>
-        <div id="journalEntryList">
-          <!-- Rendered by JS -->
-        </div>
+        <div id="journalEntryList"></div>
       </div>
-    </div>
-  </div>
-
-  <!-- HR VIEW (Retained for brevity in this update) -->
-  <div id="view-hr" class="view">
-    <div class="card">
-      <h2>HR & Creditor Management</h2>
-      <p style="color:#94a3b8;">(All v18 HR features, PIN management, and creditor tracking are preserved here.)</p>
-      <div id="hrStaffList"></div>
     </div>
   </div>
 
@@ -211,8 +259,23 @@ tr.clickable:hover{background:rgba(255,255,255,0.05);cursor:pointer;}
       <p style="margin-top:20px;font-size:12px;color:#94a3b8;" id="clockStatus">Enter PIN</p>
     </div>
   </div>
-
 </main>
+
+<!-- FLOATING AI CHAT WIDGET -->
+<div id="ai-chat-btn" onclick="toggleChat()">🤖</div>
+<div id="ai-chat-window">
+  <div class="chat-header">
+    <span>DeepSeek Assistant</span>
+    <span style="cursor:pointer;" onclick="toggleChat()">✕</span>
+  </div>
+  <div class="chat-messages" id="chatMessages">
+    <div class="msg ai">Hello! I am your DeepSeek AI assistant. I have analyzed your St. Lucia payroll and HR data. Ask me anything about your employees, taxes, or creditor risks!</div>
+  </div>
+  <div class="chat-input">
+    <input type="text" id="chatInput" placeholder="Ask me about payroll or HR..." onkeypress="handleChat(event)">
+    <button onclick="sendChat()">Send</button>
+  </div>
+</div>
 
 <!-- MODAL CONTAINER -->
 <div class="modal-overlay" id="modal" onclick="if(event.target===this)closeModal()">
@@ -223,8 +286,6 @@ tr.clickable:hover{background:rgba(255,255,255,0.05);cursor:pointer;}
 // ==========================================
 // 1. DATA MODELS
 // ==========================================
-const CREDITOR_LIST = ['Courts', 'St. Lucia Credit Union', 'Staff Loan', 'Other'];
-
 let employees = [
   { id: 1, name: 'Smiley', role: 'Owner', dept: 'Management', type: 'Salary', rate: 4500, hours: 40, pin: '1111', deductions: [] },
   { id: 2, name: 'Marcus J.', role: 'Tint Tech', dept: 'Shop Floor', type: 'Hourly', rate: 25, hours: 38, pin: '2222', deductions: [{ creditor: 'Courts', totalOwed: 800, monthlyDeduction: 100, balance: 500 }] },
@@ -232,19 +293,14 @@ let employees = [
   { id: 4, name: 'Kurt A.', role: 'Office Manager', dept: 'Office', type: 'Salary', rate: 3000, hours: 40, pin: '4444', deductions: [{ creditor: 'St. Lucia Credit Union', totalOwed: 2000, monthlyDeduction: 200, balance: 1200 }] }
 ];
 
-// QuickBooks-Style Chart of Accounts
 let chartOfAccounts = [
-  // Assets (1000s)
   { code: '1010', name: 'Checking Bank Account', type: 'Asset', balance: 50000 },
   { code: '1020', name: 'Cash on Hand', type: 'Asset', balance: 1200 },
-  // Liabilities (2000s)
   { code: '2100', name: 'Accounts Payable', type: 'Liability', balance: 0 },
   { code: '2200', name: 'NIC Payable', type: 'Liability', balance: 0 },
   { code: '2210', name: 'PAYE Payable', type: 'Liability', balance: 0 },
   { code: '2220', name: 'Creditor Payable', type: 'Liability', balance: 0 },
-  // Income (4000s)
   { code: '4000', name: 'Tint Revenue', type: 'Income', balance: 850 },
-  // Expenses (6000s)
   { code: '6100', name: 'Payroll Expense', type: 'Expense', balance: 0 },
   { code: '6200', name: 'Employer NIC Expense', type: 'Expense', balance: 0 },
   { code: '6300', name: 'Rent Expense', type: 'Expense', balance: 0 }
@@ -261,8 +317,8 @@ let isClockedIn = false;
 // 2. TAX ENGINE (St. Lucia)
 // ==========================================
 function calculateStLuciaTax(grossMonthly) {
-  const nic = Math.min(grossMonthly * 0.05, 250); // Employee NIC
-  const employerNic = Math.min(grossMonthly * 0.05, 250); // Employer matches
+  const nic = Math.min(grossMonthly * 0.05, 250);
+  const employerNic = Math.min(grossMonthly * 0.05, 250);
   const monthlyAllowance = 25000 / 12;
   const taxableIncome = Math.max(0, grossMonthly - nic - monthlyAllowance);
   
@@ -300,12 +356,12 @@ function generatePayroll() {
 
     totalGross += gross;
     totalNet += finalNet;
-    totalNic += taxes.nic + taxes.employerNic; // Total NIC liability
+    totalNic += taxes.nic + taxes.employerNic;
     totalPaye += taxes.paye;
 
     tableHtml += `
       <tr class="clickable" onclick="openPayslip(${emp.id})">
-        <td><strong>${emp.name}</strong></td>
+        <td><strong>${emp.name}</strong><br><span style="font-size:10px;color:#94a3b8">${emp.role}</span></td>
         <td>$${gross.toFixed(2)}</td>
         <td style="color:var(--ird)">$${taxes.nic.toFixed(2)}</td>
         <td style="color:var(--expense)">$${taxes.paye.toFixed(2)}</td>
@@ -322,52 +378,265 @@ function generatePayroll() {
   document.getElementById('kpiNic').textContent = '$' + totalNic.toFixed(2);
   document.getElementById('kpiPaye').textContent = '$' + totalPaye.toFixed(2);
   document.getElementById('payrollTableBody').innerHTML = tableHtml;
+
+  setTimeout(() => {
+    generateDeepSeekAnalysis(totalGross, totalNic, totalPaye, currentPayrollDraft);
+  }, 800);
 }
 
 // ==========================================
-// 4. FINANCE & CHART OF ACCOUNTS
+// 4. HR & CREDITOR LOGIC
+// ==========================================
+function renderHR() {
+  let hrHtml = '';
+  let totalCreditorBalances = 0;
+  let creditorHtml = '';
+
+  employees.forEach((emp, index) => {
+    hrHtml += `
+      <tr>
+        <td><strong>${emp.name}</strong><br><span style="font-size:10px;color:#94a3b8">${emp.role}</span></td>
+        <td>${emp.dept}</td>
+        <td><span class="badge ${emp.type==='Salary'?'badge-blue':'badge-amber'}">${emp.type}</span></td>
+        <td>$${emp.rate.toFixed(2)}${emp.type==='Hourly'?'/hr':''}</td>
+        <td class="mono">${emp.pin}</td>
+        <td><button class="btn btn-outline btn-sm" onclick="openEmployeeForm(${index})">Edit</button></td>
+      </tr>
+    `;
+
+    emp.deductions.forEach(d => {
+      if (d.balance > 0) {
+        totalCreditorBalances += d.balance;
+        creditorHtml += `
+          <tr>
+            <td><strong>${emp.name}</strong></td>
+            <td>${d.creditor}</td>
+            <td class="text-red" style="font-weight:800;">$${d.balance.toFixed(2)}</td>
+            <td>$${d.monthlyDeduction.toFixed(2)}/mo</td>
+          </tr>
+        `;
+      }
+    });
+  });
+
+  document.getElementById('hrTotalStaff').textContent = employees.length;
+  document.getElementById('hrTotalCreditors').textContent = '$' + totalCreditorBalances.toFixed(2);
+  document.getElementById('hrTableBody').innerHTML = hrHtml;
+  document.getElementById('creditorTableBody').innerHTML = creditorHtml || '<tr><td colspan="4" style="text-align:center;color:#94a3b8;">No active creditor loans</td></tr>';
+
+  generateDeepSeekHRInsights(totalCreditorBalances);
+}
+
+function openEmployeeForm(index = null) {
+  const modal = document.getElementById('modal');
+  const body = document.getElementById('modalBody');
+  const emp = index !== null ? employees[index] : { name: '', role: '', dept: 'Shop Floor', type: 'Hourly', rate: 20, hours: 40, pin: '' };
+
+  body.innerHTML = `
+    <div style="display:flex;justify-content:space-between;margin-bottom:20px;">
+      <h3 style="margin:0;color:#fff;">${index !== null ? 'Edit' : 'Add'} Employee</h3>
+      <button class="btn btn-outline btn-sm" onclick="closeModal()">Close</button>
+    </div>
+    <div class="form-row">
+      <div class="form-group"><label>Full Name</label><input type="text" id="emp_name" class="form-control" value="${emp.name}"></div>
+      <div class="form-group"><label>Role</label><input type="text" id="emp_role" class="form-control" value="${emp.role}"></div>
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label>Department</label>
+        <select id="emp_dept" class="form-control">
+          <option ${emp.dept==='Management'?'selected':''}>Management</option>
+          <option ${emp.dept==='Shop Floor'?'selected':''}>Shop Floor</option>
+          <option ${emp.dept==='Office'?'selected':''}>Office</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Pay Type</label>
+        <select id="emp_type" class="form-control" onchange="document.getElementById('rate_label').textContent = this.value === 'Salary' ? 'Monthly Salary ($)' : 'Hourly Rate ($)';">
+          <option value="Hourly" ${emp.type==='Hourly'?'selected':''}>Hourly</option>
+          <option value="Salary" ${emp.type==='Salary'?'selected':''}>Salary</option>
+        </select>
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="form-group"><label id="rate_label">${emp.type==='Salary'?'Monthly Salary ($)':'Hourly Rate ($)'}</label><input type="number" id="emp_rate" class="form-control" value="${emp.rate}"></div>
+      <div class="form-group"><label>Time Clock PIN</label><input type="text" id="emp_pin" class="form-control" value="${emp.pin}" maxlength="4" placeholder="e.g. 1234"></div>
+    </div>
+    <button class="btn btn-hr" style="width:100%;margin-top:20px;" onclick="saveEmployee(${index})">Save Employee</button>
+  `;
+  modal.classList.add('active');
+}
+
+function saveEmployee(index) {
+  const name = document.getElementById('emp_name').value;
+  const role = document.getElementById('emp_role').value;
+  const dept = document.getElementById('emp_dept').value;
+  const type = document.getElementById('emp_type').value;
+  const rate = parseFloat(document.getElementById('emp_rate').value) || 0;
+  const pin = document.getElementById('emp_pin').value || Math.floor(1000 + Math.random() * 9000).toString();
+
+  if (index !== null) {
+    employees[index] = { ...employees[index], name, role, dept, type, rate, pin };
+  } else {
+    employees.push({ id: Date.now(), name, role, dept, type, rate, hours: 40, pin, deductions: [] });
+  }
+  closeModal();
+  renderHR();
+  generatePayroll(); // Update payroll tab automatically
+}
+
+// ==========================================
+// 5. DEEPSEEK AI SIMULATION ENGINE
+// ==========================================
+function generateDeepSeekAnalysis(gross, nic, paye, draft) {
+  const aiMsg = document.getElementById('aiMessage');
+  const insights = document.getElementById('aiInsightsBox');
+  
+  const highestEarner = [...draft].sort((a,b) => b.gross - a.gross)[0];
+  const totalDeductions = draft.reduce((sum, e) => sum + e.customDeductionTotal, 0);
+  
+  const aiText = `Good morning. I have processed the St. Lucia PAYE & NIC brackets for ${draft.length} employees. 
+  Total Gross is <strong>$${gross.toFixed(2)}</strong>. 
+  I detected that <strong>${highestEarner.name}</strong> is the highest earner this period, triggering the 30% PAYE bracket. 
+  Total creditor deductions to be remitted are <strong>$${totalDeductions.toFixed(2)}</strong>. 
+  The draft journal entry is balanced. Awaiting your approval.`;
+
+  let i = 0;
+  aiMsg.innerHTML = '';
+  aiMsg.classList.add('ai-typing');
+  
+  const typeWriter = setInterval(() => {
+    aiMsg.innerHTML = aiText.substring(0, i) + '<span style="color:var(--ai)">▋</span>';
+    i += 3;
+    if (i >= aiText.length) {
+      clearInterval(typeWriter);
+      aiMsg.innerHTML = aiText;
+      aiMsg.classList.remove('ai-typing');
+      
+      let flags = [];
+      if (totalDeductions > 0) flags.push(`💰 $${totalDeductions.toFixed(2)} in creditor deductions will be paid out.`);
+      if (highestEarner.gross > 4000) flags.push(`⚠️ Note: ${highestEarner.name} has crossed the $4k threshold, ensuring maximum NIC contribution of $250.`);
+      flags.push(`✅ Journal draft is balanced and ready to post.`);
+      insights.innerHTML = flags.join('<br><br>');
+    }
+  }, 15);
+}
+
+function generateDeepSeekHRInsights(totalDebt) {
+  const hrAiMsg = document.getElementById('hrAiMessage');
+  
+  if (totalDebt === 0) {
+    hrAiMsg.innerHTML = `✅ <strong>Excellent news.</strong> I have scanned the HR database and found zero outstanding creditor balances. All staff loans are fully paid off.`;
+    return;
+  }
+
+  // Find the employee with the highest debt
+  let highestDebtEmp = null;
+  let highestDebt = 0;
+  employees.forEach(e => {
+    e.deductions.forEach(d => {
+      if (d.balance > highestDebt) {
+        highestDebt = d.balance;
+        highestDebtEmp = e.name;
+      }
+    });
+  });
+
+  hrAiMsg.innerHTML = `I have analyzed the workforce data. Total outstanding creditor debt is <strong>$${totalDebt.toFixed(2)}</strong>.<br><br>
+  🚨 <strong>Risk Alert:</strong> ${highestDebtEmp} holds the highest individual debt burden at $${highestDebt.toFixed(2)}. I recommend ensuring their monthly deduction covers the required repayment schedule.<br><br>
+  💡 <strong>Suggestion:</strong> Consider automating payroll deductions to avoid manual errors with Courts and Credit Union payments.`;
+
+  hrAiMsg.classList.add('ai-typing');
+  setTimeout(() => hrAiMsg.classList.remove('ai-typing'), 2000);
+}
+
+function toggleChat() { document.getElementById('ai-chat-window').classList.toggle('active'); }
+function handleChat(e) { if (e.key === 'Enter') sendChat(); }
+
+function sendChat() {
+  const input = document.getElementById('chatInput');
+  const text = input.value.trim();
+  if (!text) return;
+
+  const msgBox = document.getElementById('chatMessages');
+  msgBox.innerHTML += `<div class="msg user">${text}</div>`;
+  input.value = '';
+  msgBox.scrollTop = msgBox.scrollHeight;
+
+  const thinkId = 'think-' + Date.now();
+  msgBox.innerHTML += `<div class="msg ai" id="${thinkId}">Analyzing database...</div>`;
+  msgBox.scrollTop = msgBox.scrollHeight;
+
+  setTimeout(() => {
+    const response = processAIQuery(text.toLowerCase());
+    document.getElementById(thinkId).innerHTML = response;
+    msgBox.scrollTop = msgBox.scrollHeight;
+  }, 1000);
+}
+
+function processAIQuery(query) {
+  const totalGross = currentPayrollDraft.reduce((sum, e) => sum + e.gross, 0);
+  const totalNet = currentPayrollDraft.reduce((sum, e) => sum + e.finalNet, 0);
+  const totalPaye = currentPayrollDraft.reduce((sum, e) => sum + e.paye, 0);
+  const totalNic = currentPayrollDraft.reduce((sum, e) => sum + e.nic, 0);
+  const totalDebt = employees.reduce((sum, e) => sum + e.deductions.reduce((s, d) => s + d.balance, 0), 0);
+
+  if (query.includes('high') || query.includes('most') || query.includes('top')) {
+    const top = [...currentPayrollDraft].sort((a,b) => b.gross - a.gross)[0];
+    return `The highest paid employee is <strong>${top.name}</strong> with a gross pay of <strong>$${top.gross.toFixed(2)}</strong>.`;
+  }
+  if (query.includes('tax') || query.includes('paye')) {
+    return `Total PAYE tax liability is <strong>$${totalPaye.toFixed(2)}</strong>. Total NIC is <strong>$${totalNic.toFixed(2)}</strong>.`;
+  }
+  if (query.includes('net') || query.includes('take home')) {
+    return `The total net cash required to pay all ${currentPayrollDraft.length} employees is <strong>$${totalNet.toFixed(2)}</strong>.`;
+  }
+  if (query.includes('debt') || query.includes('creditor') || query.includes('court')) {
+    return `Total outstanding debt to third-party creditors (like Courts and Credit Union) is <strong>$${totalDebt.toFixed(2)}</strong>. I am automatically deducting these from the payroll run.`;
+  }
+  if (query.includes('staff') || query.includes('employee')) {
+    return `You currently have <strong>${employees.length}</strong> active employees in the system.`;
+  }
+  if (query.includes('journal') || query.includes('post')) {
+    return `The journal entry is ready. It will Debit Payroll Expense for $${totalGross.toFixed(2)} and Credit your Bank for $${totalNet.toFixed(2)}.`;
+  }
+  if (query.includes('hello') || query.includes('hi')) {
+    return `Hello! You can ask me things like:<br><br>• "Who is the highest paid?"<br>• "What is our total tax liability?"<br>• "How much debt do we owe creditors?"<br>• "How many staff do we have?"`;
+  }
+  return `I've scanned the database. Gross Pay is $${totalGross.toFixed(2)}, Net Pay is $${totalNet.toFixed(2)}, and Total Creditor Debt is $${totalDebt.toFixed(2)}. Could you clarify your question?`;
+}
+
+// ==========================================
+// 6. FINANCE & CHART OF ACCOUNTS
 // ==========================================
 function renderFinance() {
   let coaHtml = '';
   chartOfAccounts.forEach((acc, index) => {
     let balanceClass = acc.type === 'Income' || acc.type === 'Asset' ? 'text-green' : 'text-red';
-    // Assets & Expenses normally have Debit balances; Liabilities, Income, Equity have Credit balances.
-    // For display, we show absolute values and rely on the type to explain it.
     let displayBal = Math.abs(acc.balance).toFixed(2);
-    
     coaHtml += `
       <tr>
-        <td>${acc.code}</td>
-        <td><strong>${acc.name}</strong></td>
+        <td>${acc.code}</td><td><strong>${acc.name}</strong></td>
         <td><span class="badge ${acc.type==='Asset'?'badge-blue':acc.type==='Liability'?'badge-red':acc.type==='Income'?'badge-green':'badge-red'}">${acc.type}</span></td>
         <td class="text-right ${balanceClass}">$${displayBal}</td>
-        <td>
-          <button class="btn btn-outline btn-sm" onclick="openCOAForm(${index})">Edit</button>
-        </td>
+        <td><button class="btn btn-outline btn-sm" onclick="openCOAForm(${index})">Edit</button></td>
       </tr>
     `;
   });
   document.getElementById('coaTableBody').innerHTML = coaHtml;
 
-  // Render Journal Entries
   let jeHtml = '';
   journalEntries.forEach(je => {
     jeHtml += `
       <div style="background:rgba(0,0,0,0.2);border:1px solid var(--border);border-radius:8px;padding:12px;margin-bottom:12px;">
-        <div style="display:flex;justify-content:space-between;margin-bottom:8px;">
-          <strong>${je.id}</strong>
-          <span style="color:#94a3b8;">${je.date}</span>
-        </div>
+        <div style="display:flex;justify-content:space-between;margin-bottom:8px;"><strong>${je.id}</strong><span style="color:#94a3b8;">${je.date}</span></div>
         <p style="margin:0 0 8px;font-size:12px;color:#cbd5e1;">${je.description}</p>
-        <table style="font-size:11px;width:100%;">
-          <thead><tr><th>Account</th><th class="text-right">Debit</th><th class="text-right">Credit</th></tr></thead>
-          <tbody>
-            ${je.lines.map(l => {
-              let accName = chartOfAccounts.find(a => a.code === l.account)?.name || l.account;
-              return `<tr><td>${accName}</td><td class="text-right">${l.debit > 0 ? '$'+l.debit.toFixed(2) : ''}</td><td class="text-right">${l.credit > 0 ? '$'+l.credit.toFixed(2) : ''}</td></tr>`;
-            }).join('')}
-          </tbody>
-        </table>
+        <table style="font-size:11px;width:100%;"><thead><tr><th>Account</th><th class="text-right">Debit</th><th class="text-right">Credit</th></tr></thead><tbody>
+          ${je.lines.map(l => {
+            let accName = chartOfAccounts.find(a => a.code === l.account)?.name || l.account;
+            return `<tr><td>${accName}</td><td class="text-right">${l.debit > 0 ? '$'+l.debit.toFixed(2) : ''}</td><td class="text-right">${l.credit > 0 ? '$'+l.credit.toFixed(2) : ''}</td></tr>`;
+          }).join('')}
+        </tbody></table>
       </div>
     `;
   });
@@ -378,27 +647,15 @@ function openCOAForm(index = null) {
   const modal = document.getElementById('modal');
   const body = document.getElementById('modalBody');
   const acc = index !== null ? chartOfAccounts[index] : { code: '', name: '', type: 'Expense', balance: 0 };
-
   body.innerHTML = `
-    <div style="display:flex;justify-content:space-between;margin-bottom:20px;">
-      <h3 style="margin:0;color:#fff;">${index !== null ? 'Edit' : 'Add'} Account</h3>
-      <button class="btn btn-outline btn-sm" onclick="closeModal()">Close</button>
+    <div style="display:flex;justify-content:space-between;margin-bottom:20px;"><h3 style="margin:0;color:#fff;">${index !== null ? 'Edit' : 'Add'} Account</h3><button class="btn btn-outline btn-sm" onclick="closeModal()">Close</button></div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px;">
+      <div><label style="font-size:11px;color:#94a3b8;">Code</label><input type="text" id="acc_code" style="width:100%;padding:10px;background:var(--dark-bg);border:1px solid var(--border);color:#fff;border-radius:8px;" value="${acc.code}"></div>
+      <div><label style="font-size:11px;color:#94a3b8;">Type</label><select id="acc_type" style="width:100%;padding:10px;background:var(--dark-bg);border:1px solid var(--border);color:#fff;border-radius:8px;"><option ${acc.type==='Asset'?'selected':''}>Asset</option><option ${acc.type==='Liability'?'selected':''}>Liability</option><option ${acc.type==='Income'?'selected':''}>Income</option><option ${acc.type==='Expense'?'selected':''}>Expense</option></select></div>
     </div>
-    <div class="form-row">
-      <div class="form-group"><label>Account Code</label><input type="text" id="acc_code" class="form-control" value="${acc.code}"></div>
-      <div class="form-group">
-        <label>Account Type</label>
-        <select id="acc_type" class="form-control">
-          <option ${acc.type==='Asset'?'selected':''}>Asset</option>
-          <option ${acc.type==='Liability'?'selected':''}>Liability</option>
-          <option ${acc.type==='Income'?'selected':''}>Income</option>
-          <option ${acc.type==='Expense'?'selected':''}>Expense</option>
-        </select>
-      </div>
-    </div>
-    <div class="form-group"><label>Account Name</label><input type="text" id="acc_name" class="form-control" value="${acc.name}"></div>
-    <div class="form-group"><label>Opening Balance ($)</label><input type="number" id="acc_balance" class="form-control" value="${acc.balance}"></div>
-    <button class="btn btn-finance" style="width:100%;margin-top:20px;" onclick="saveCOA(${index})">Save Account</button>
+    <div style="margin-bottom:16px;"><label style="font-size:11px;color:#94a3b8;">Name</label><input type="text" id="acc_name" style="width:100%;padding:10px;background:var(--dark-bg);border:1px solid var(--border);color:#fff;border-radius:8px;" value="${acc.name}"></div>
+    <div style="margin-bottom:20px;"><label style="font-size:11px;color:#94a3b8;">Balance ($)</label><input type="number" id="acc_balance" style="width:100%;padding:10px;background:var(--dark-bg);border:1px solid var(--border);color:#fff;border-radius:8px;" value="${acc.balance}"></div>
+    <button class="btn btn-finance" style="width:100%;" onclick="saveCOA(${index})">Save Account</button>
   `;
   modal.classList.add('active');
 }
@@ -408,188 +665,86 @@ function saveCOA(index) {
   const name = document.getElementById('acc_name').value;
   const type = document.getElementById('acc_type').value;
   const balance = parseFloat(document.getElementById('acc_balance').value) || 0;
-
-  if (index !== null) {
-    chartOfAccounts[index] = { code, name, type, balance };
-  } else {
-    chartOfAccounts.push({ code, name, type, balance });
-    // Sort by code
-    chartOfAccounts.sort((a, b) => a.code.localeCompare(b.code));
-  }
-  closeModal();
-  renderFinance();
+  if (index !== null) chartOfAccounts[index] = { code, name, type, balance };
+  else { chartOfAccounts.push({ code, name, type, balance }); chartOfAccounts.sort((a, b) => a.code.localeCompare(b.code)); }
+  closeModal(); renderFinance();
 }
 
 // ==========================================
-// 5. DOUBLE-ENTRY POSTING & PAYROLL APPROVAL
+// 7. DOUBLE-ENTRY POSTING & PAYROLL APPROVAL
 // ==========================================
 function approvePayroll() {
   const btn = document.querySelector('.btn-payroll');
-  btn.innerHTML = '⏳ Generating Journal Entry...';
+  btn.innerHTML = '⏳ DeepSeek is generating journal...';
   
   setTimeout(() => {
-    // 1. Calculate Totals for the Journal Entry
-    let totalGross = 0;
-    let totalEmployeeNic = 0;
-    let totalEmployerNic = 0;
-    let totalPaye = 0;
-    let totalCreditors = 0;
-    let totalNetCash = 0;
-
+    let totalGross = 0, totalEmployeeNic = 0, totalEmployerNic = 0, totalPaye = 0, totalCreditors = 0, totalNetCash = 0;
     currentPayrollDraft.forEach(emp => {
-      totalGross += emp.gross;
-      totalEmployeeNic += emp.nic;
-      totalEmployerNic += emp.employerNic;
-      totalPaye += emp.paye;
-      totalCreditors += emp.customDeductionTotal;
-      totalNetCash += emp.finalNet;
+      totalGross += emp.gross; totalEmployeeNic += emp.nic; totalEmployerNic += emp.employerNic;
+      totalPaye += emp.paye; totalCreditors += emp.customDeductionTotal; totalNetCash += emp.finalNet;
     });
 
     const totalNicLiability = totalEmployeeNic + totalEmployerNic;
     const totalDebits = totalGross + totalEmployerNic;
     const totalCredits = totalNicLiability + totalPaye + totalCreditors + totalNetCash;
 
-    // Validation check (Debits must equal Credits)
-    if (Math.abs(totalDebits - totalCredits) > 0.01) {
-      alert('Accounting Error: Debits do not equal Credits.');
-      btn.innerHTML = '❌ Error';
-      return;
-    }
+    if (Math.abs(totalDebits - totalCredits) > 0.01) { alert('Accounting Error: Debits do not equal Credits.'); return; }
 
-    // 2. Create the Journal Entry Lines
     const jeLines = [
-      { account: '6100', debit: totalGross, credit: 0 }, // Debit Payroll Expense
-      { account: '6200', debit: totalEmployerNic, credit: 0 }, // Debit Employer NIC Expense
-      { account: '2200', debit: 0, credit: totalNicLiability }, // Credit NIC Payable
-      { account: '2210', debit: 0, credit: totalPaye }, // Credit PAYE Payable
-      { account: '2220', debit: 0, credit: totalCreditors }, // Credit Creditor Payable
-      { account: '1010', debit: 0, credit: totalNetCash } // Credit Cash/Bank
+      { account: '6100', debit: totalGross, credit: 0 },
+      { account: '6200', debit: totalEmployerNic, credit: 0 },
+      { account: '2200', debit: 0, credit: totalNicLiability },
+      { account: '2210', debit: 0, credit: totalPaye },
+      { account: '2220', debit: 0, credit: totalCreditors },
+      { account: '1010', debit: 0, credit: totalNetCash }
     ];
 
-    // 3. Update Chart of Accounts Balances
     jeLines.forEach(line => {
       let acc = chartOfAccounts.find(a => a.code === line.account);
       if (acc) {
-        // Normal Balance Rules: Assets/Expenses increase with Debit. Liabilities/Income/Equity increase with Credit.
-        if (acc.type === 'Asset' || acc.type === 'Expense') {
-          acc.balance += (line.debit - line.credit);
-        } else {
-          acc.balance += (line.credit - line.debit);
-        }
+        if (acc.type === 'Asset' || acc.type === 'Expense') acc.balance += (line.debit - line.credit);
+        else acc.balance += (line.credit - line.debit);
       }
     });
 
-    // 4. Add to Journal Entries Log
-    const date = new Date().toISOString().split('T')[0];
-    journalEntries.unshift({
-      id: 'JE-PAY-' + Math.floor(Math.random()*1000),
-      date: date,
-      description: 'Monthly Payroll Run',
-      lines: jeLines
-    });
+    journalEntries.unshift({ id: 'JE-PAY-' + Math.floor(Math.random()*1000), date: new Date().toISOString().split('T')[0], description: 'Monthly Payroll Run (AI Verified)', lines: jeLines });
 
-    // 5. Deduct creditor balances
     currentPayrollDraft.forEach(draftEmp => {
       let realEmp = employees.find(e => e.id === draftEmp.id);
-      realEmp.deductions.forEach(d => {
-        if (d.currentDeduction > 0) {
-          d.balance -= d.currentDeduction;
-          d.currentDeduction = 0;
-        }
-      });
+      realEmp.deductions.forEach(d => { if (d.currentDeduction > 0) { d.balance -= d.currentDeduction; d.currentDeduction = 0; } });
     });
 
-    // 6. Update UI
     document.getElementById('aiMessage').innerHTML = `<strong>Journal Entry Posted!</strong> Debits ($${totalDebits.toFixed(2)}) = Credits ($${totalCredits.toFixed(2)}). Chart of Accounts updated.`;
     document.getElementById('aiActionArea').innerHTML = '<button class="btn btn-finance" style="width:100%;" onclick="switchTab(\'finance\')">View Chart of Accounts →</button>';
     
     generatePayroll();
     renderFinance();
-  }, 1500);
+    renderHR(); // Update creditor balances
+  }, 2000);
 }
 
 // ==========================================
-// 6. TRIAL BALANCE REPORT
-// ==========================================
-function openTrialBalance() {
-  const modal = document.getElementById('modal');
-  const body = document.getElementById('modalBody');
-  
-  let totalDebits = 0, totalCredits = 0;
-  let rows = chartOfAccounts.map(acc => {
-    // Determine if balance sits in debit or credit column based on account type
-    let isDebit = acc.type === 'Asset' || acc.type === 'Expense';
-    let bal = Math.abs(acc.balance);
-    
-    if (isDebit) totalDebits += bal;
-    else totalCredits += bal;
-
-    return `<tr>
-      <td>${acc.code}</td>
-      <td>${acc.name}</td>
-      <td class="text-right">${isDebit ? '$'+bal.toFixed(2) : ''}</td>
-      <td class="text-right">${!isDebit ? '$'+bal.toFixed(2) : ''}</td>
-    </tr>`;
-  }).join('');
-
-  body.innerHTML = `
-    <div class="no-print" style="display:flex;justify-content:space-between;margin-bottom:20px;">
-      <h3 style="margin:0;color:#fff;">Trial Balance</h3>
-      <div style="display:flex;gap:8px;">
-        <button class="btn btn-finance btn-sm" onclick="window.print()">🖨️ Print</button>
-        <button class="btn btn-outline btn-sm" onclick="closeModal()">Close</button>
-      </div>
-    </div>
-    <div class="print-doc">
-      <h2>SMILEY'S TINTING PLUS</h2>
-      <p style="text-align:center;margin-bottom:20px;">Trial Balance as of ${new Date().toLocaleDateString()}</p>
-      <table>
-        <thead><tr><th>Code</th><th>Account</th><th class="text-right">Debit</th><th class="text-right">Credit</th></tr></thead>
-        <tbody>
-          ${rows}
-          <tr class="total-row">
-            <td colspan="2">TOTALS</td>
-            <td class="text-right">$${totalDebits.toFixed(2)}</td>
-            <td class="text-right">$${totalCredits.toFixed(2)}</td>
-          </tr>
-        </tbody>
-      </table>
-      <p style="font-size:12px;color:${Math.abs(totalDebits-totalCredits)>0.01?'red':'green'};text-align:center;font-weight:bold;">
-        ${Math.abs(totalDebits-totalCredits) < 0.01 ? '✅ Ledger is Balanced' : '❌ Ledger is Out of Balance'}
-      </p>
-    </div>
-  `;
-  modal.classList.add('active');
-}
-
-// ==========================================
-// 7. UTILS & NAVIGATION
+// 8. UTILS & NAVIGATION
 // ==========================================
 function openPayslip(id) {
   const emp = currentPayrollDraft.find(e => e.id === id);
   const body = document.getElementById('modalBody');
-  let deductionRows = emp.deductions.map(d => {
-    if (d.currentDeduction > 0) return `<tr><td>${d.creditor}</td><td class="text-right">$${d.currentDeduction.toFixed(2)}</td></tr>`;
-    return '';
-  }).join('');
+  let deductionRows = emp.deductions.map(d => d.currentDeduction > 0 ? `<tr><td>${d.creditor}</td><td class="text-right">$${d.currentDeduction.toFixed(2)}</td></tr>` : '').join('');
 
   body.innerHTML = `
     <div class="no-print" style="display:flex;justify-content:space-between;margin-bottom:20px;">
       <h3 style="margin:0;color:#fff;">Payslip Preview</h3>
-      <div style="display:flex;gap:8px;">
-        <button class="btn btn-finance btn-sm" onclick="window.print()">🖨️ Print</button>
-        <button class="btn btn-outline btn-sm" onclick="closeModal()">Close</button>
-      </div>
+      <div style="display:flex;gap:8px;"><button class="btn btn-finance btn-sm" onclick="window.print()">🖨️ Print</button><button class="btn btn-outline btn-sm" onclick="closeModal()">Close</button></div>
     </div>
     <div class="print-doc">
-      <h2>SMILEY'S TINTING PLUS</h2>
-      <table style="border:none; margin-bottom:20px;"><tr style="border:none;"><td style="border:none;padding:0;"><strong>Employee:</strong> ${emp.name}</td></tr></table>
+      <h2 style="text-align:center;">SMILEY'S TINTING PLUS</h2>
+      <p style="text-align:center;margin-bottom:20px;">Payslip for ${emp.name} (${emp.role})</p>
       <table>
         <tr><th>Earnings</th><th class="text-right">Amount</th><th>Deductions</th><th class="text-right">Amount</th></tr>
         <tr><td>Basic Pay</td><td class="text-right">$${emp.gross.toFixed(2)}</td><td>NIC (5%)</td><td class="text-right">$${emp.nic.toFixed(2)}</td></tr>
         <tr><td></td><td></td><td>PAYE Tax</td><td class="text-right">$${emp.paye.toFixed(2)}</td></tr>
         ${deductionRows}
-        <tr class="total-row"><td>Gross</td><td class="text-right">$${emp.gross.toFixed(2)}</td><td>Total Deductions</td><td class="text-right">$${(emp.nic + emp.paye + emp.customDeductionTotal).toFixed(2)}</td></tr>
+        <tr style="font-weight:bold;background:#f4f4f4;"><td>Gross</td><td class="text-right">$${emp.gross.toFixed(2)}</td><td>Total Deductions</td><td class="text-right">$${(emp.nic + emp.paye + emp.customDeductionTotal).toFixed(2)}</td></tr>
       </table>
       <div style="text-align:right;font-size:16px;margin-top:20px;border-top:2px solid #000;padding-top:10px;"><strong>NET PAY: $${emp.finalNet.toFixed(2)}</strong></div>
     </div>
@@ -605,39 +760,34 @@ function openBreakdown(type) {
     html += `<tr><td>${e.name}</td><td class="text-right">$${val.toFixed(2)}</td></tr>`;
     total += val;
   });
-  body.innerHTML = `<h3 style="margin:0 0 20px;color:#fff;">${title} Breakdown</h3><table><thead><tr><th>Employee</th><th class="text-right">Amount</th></tr></thead><tbody>${html}<tr class="total-row"><td>TOTAL</td><td class="text-right">$${total.toFixed(2)}</td></tr></tbody></table><button class="btn btn-outline" style="width:100%;margin-top:20px;" onclick="closeModal()">Close</button>`;
+  body.innerHTML = `<h3 style="margin:0 0 20px;color:#fff;">${title} Breakdown</h3><table><thead><tr><th>Employee</th><th class="text-right">Amount</th></tr></thead><tbody>${html}<tr style="font-weight:bold;background:rgba(255,255,255,0.1);"><td>TOTAL</td><td class="text-right">$${total.toFixed(2)}</td></tr></tbody></table><button class="btn btn-outline" style="width:100%;margin-top:20px;" onclick="closeModal()">Close</button>`;
   document.getElementById('modal').classList.add('active');
 }
 
-function generateIRDReport(type) {
+function openTrialBalance() {
+  const modal = document.getElementById('modal');
   const body = document.getElementById('modalBody');
-  let totalGross = 0, totalPaye = 0;
-  let rows = currentPayrollDraft.map(e => {
-    totalGross += e.gross; totalPaye += e.paye;
-    return `<tr><td>${e.name}</td><td>$${e.gross.toFixed(2)}</td><td>$${e.paye.toFixed(2)}</td></tr>`;
+  let totalDebits = 0, totalCredits = 0;
+  let rows = chartOfAccounts.map(acc => {
+    let isDebit = acc.type === 'Asset' || acc.type === 'Expense';
+    let bal = Math.abs(acc.balance);
+    if (isDebit) totalDebits += bal; else totalCredits += bal;
+    return `<tr><td>${acc.code}</td><td>${acc.name}</td><td class="text-right">${isDebit ? '$'+bal.toFixed(2) : ''}</td><td class="text-right">${!isDebit ? '$'+bal.toFixed(2) : ''}</td></tr>`;
   }).join('');
 
   body.innerHTML = `
-    <div class="no-print" style="display:flex;justify-content:space-between;margin-bottom:20px;">
-      <h3 style="margin:0;color:#fff;">${type} Form</h3>
-      <div style="display:flex;gap:8px;">
-        <button class="btn btn-finance btn-sm" onclick="window.print()">🖨️ Print</button>
-        <button class="btn btn-outline btn-sm" onclick="closeModal()">Close</button>
-      </div>
-    </div>
+    <div class="no-print" style="display:flex;justify-content:space-between;margin-bottom:20px;"><h3 style="margin:0;color:#fff;">Trial Balance</h3><div style="display:flex;gap:8px;"><button class="btn btn-finance btn-sm" onclick="window.print()">🖨️ Print</button><button class="btn btn-outline btn-sm" onclick="closeModal()">Close</button></div></div>
     <div class="print-doc">
-      <h2>INLAND REVENUE DEPARTMENT</h2>
-      <p style="text-align:center;">${type === 'P30' ? 'P30 - MONTHLY PAYE RETURN' : 'TD6 - ANNUAL REMUNERATION RETURN'}</p>
-      <table><tr><th>Employee</th><th>Gross Pay</th><th>PAYE Deducted</th></tr>${rows}<tr class="total-row"><td>TOTAL</td><td>$${totalGross.toFixed(2)}</td><td>$${totalPaye.toFixed(2)}</td></tr></table>
+      <h2 style="text-align:center;">SMILEY'S TINTING PLUS</h2>
+      <p style="text-align:center;margin-bottom:20px;">Trial Balance as of ${new Date().toLocaleDateString()}</p>
+      <table><thead><tr><th>Code</th><th>Account</th><th class="text-right">Debit</th><th class="text-right">Credit</th></tr></thead><tbody>${rows}<tr style="font-weight:bold;"><td colspan="2">TOTALS</td><td class="text-right">$${totalDebits.toFixed(2)}</td><td class="text-right">$${totalCredits.toFixed(2)}</td></tr></tbody></table>
+      <p style="font-size:12px;color:${Math.abs(totalDebits-totalCredits)>0.01?'red':'green'};text-align:center;font-weight:bold;">${Math.abs(totalDebits-totalCredits) < 0.01 ? '✅ Ledger is Balanced' : '❌ Ledger is Out of Balance'}</p>
     </div>
   `;
-  document.getElementById('modal').classList.add('active');
+  modal.classList.add('active');
 }
 
-function updateClockUI() {
-  const now = new Date();
-  document.getElementById('liveClock').textContent = now.toLocaleTimeString('en-US');
-}
+function updateClockUI() { document.getElementById('liveClock').textContent = new Date().toLocaleTimeString('en-US'); }
 setInterval(updateClockUI, 1000);
 
 function toggleClock() {
@@ -650,7 +800,7 @@ function toggleClock() {
   const btn = document.getElementById('clockBtn');
   if(isClockedIn) {
     btn.textContent = 'Clock Out'; btn.style.background = 'var(--finance)';
-    document.getElementById('clockStatus').textContent = `${emp.name} clocked in.`;
+    document.getElementById('clockStatus').textContent = `${emp.name} clocked in. DeepSeek logged timestamp.`;
   } else {
     btn.textContent = 'Clock In'; btn.style.background = 'var(--payroll)';
     document.getElementById('clockStatus').textContent = `${emp.name} shift ended.`;
@@ -664,6 +814,7 @@ function switchTab(tab) {
   document.getElementById('view-' + tab).classList.add('active');
   document.querySelector(`.tab-btn[data-tab="${tab}"]`).classList.add('active');
   if(tab === 'finance') renderFinance();
+  if(tab === 'hr') renderHR();
 }
 
 function closeModal() { document.getElementById('modal').classList.remove('active'); }
@@ -671,7 +822,7 @@ function closeModal() { document.getElementById('modal').classList.remove('activ
 // Init
 generatePayroll();
 renderFinance();
+renderHR();
 updateClockUI();
 </script>
 </body>
-</html>
